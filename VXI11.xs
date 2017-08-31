@@ -16,14 +16,6 @@ do_not_warn_unused(void *x __attribute__((__unused__)))
 {
 }
 
-static SV *
-pointer_object(pTHX_ const char *class_name, void *pv)
-{
-    SV *rv = newSV(0);
-    sv_setref_pv(rv, class_name, pv);
-    return rv;
-}
-
 MODULE = Lab::VXI11		PACKAGE = Lab::VXI11		
 
 INCLUDE: const-xs.inc
@@ -46,11 +38,7 @@ CODE:
 void
 create_link(Lab::VXI11 client, long clientId, bool_t lockDevice, u_long lock_timeout, char *device)
 PPCODE:
-    Create_LinkParms link_parms;
-    link_parms.clientId = clientId;
-    link_parms.lockDevice = lockDevice;
-    link_parms.lock_timeout = lock_timeout;
-    link_parms.device = device;
+    Create_LinkParms link_parms = {clientId, lockDevice, lock_timeout, device};
     
     Create_LinkResp *link_resp;
     link_resp = create_link_1(&link_parms, client);
@@ -62,18 +50,12 @@ PPCODE:
 
 
 void
-device_write(Lab::VXI11 client, long lid, unsigned long io_timeout, unsigned long lock_timeout, long flags, SV *data)
+device_write(Lab::VXI11 client, Device_Link lid, u_long io_timeout, u_long lock_timeout, Device_Flags flags, SV *data)
 PPCODE:
     const char *bytes;
     STRLEN len;
     bytes = SvPV(data, len);
-    Device_WriteParms write_parms;
-    write_parms.lid = lid;
-    write_parms.io_timeout = io_timeout;
-    write_parms.lock_timeout = lock_timeout;
-    write_parms.flags = flags;
-    write_parms.data.data_len = len;
-    write_parms.data.data_val = (char *) bytes;
+    Device_WriteParms write_parms = {lid, io_timeout, lock_timeout, flags, {len, (char *) bytes}};
 
     Device_WriteResp *write_resp;
     write_resp = device_write_1(&write_parms, client);
@@ -82,15 +64,9 @@ PPCODE:
 
 
 void
-device_read(Lab::VXI11 client, long lid, unsigned long requestSize, unsigned long io_timeout, unsigned long lock_timeout, long flags, char termChar)
+device_read(Lab::VXI11 client, Device_Link lid, u_long requestSize, u_long io_timeout, u_long lock_timeout, Device_Flags flags, char termChar)
 PPCODE:
-    Device_ReadParms read_parms;
-    read_parms.lid = lid;
-    read_parms.requestSize = requestSize;
-    read_parms.io_timeout = io_timeout;
-    read_parms.lock_timeout = lock_timeout;
-    read_parms.flags = flags;
-    read_parms.termChar = termChar;
+    Device_ReadParms read_parms = {lid, requestSize, io_timeout, lock_timeout, flags, termChar};
 
     Device_ReadResp *read_resp;
     read_resp = device_read_1(&read_parms, client);
@@ -101,5 +77,120 @@ PPCODE:
     
 
    
-#void
-#device_readstb(Lab::VXI11 client, long lid, long flags, 
+void
+device_readstb(Lab::VXI11 client, Device_Link lid, Device_Flags flags, u_long lock_timeout, u_long io_timeout)
+PPCODE:
+    Device_GenericParms parms = {lid, flags, lock_timeout, io_timeout};
+    Device_ReadStbResp *resp;
+    resp = device_readstb_1(&parms, client);
+    mXPUSHi(resp->error);
+    mXPUSHu(resp->stb);
+
+
+void
+device_trigger(Lab::VXI11 client, Device_Link lid, Device_Flags flags, u_long lock_timeout, u_long io_timeout)
+PPCODE:
+    Device_GenericParms parms = {lid, flags, lock_timeout, io_timeout};
+    Device_Error *resp;
+    resp = device_trigger_1(&parms, client);
+    mXPUSHi(resp->error);
+
+
+void
+device_clear(Lab::VXI11 client, Device_Link lid, Device_Flags flags, u_long lock_timeout, u_long io_timeout)
+PPCODE:
+    Device_GenericParms parms = {lid, flags, lock_timeout, io_timeout};
+    Device_Error *resp;
+    resp = device_clear_1(&parms, client);
+    mXPUSHi(resp->error);
+
+
+void
+device_remote(Lab::VXI11 client, Device_Link lid, Device_Flags flags, u_long lock_timeout, u_long io_timeout)
+PPCODE:
+    Device_GenericParms parms = {lid, flags, lock_timeout, io_timeout};
+    Device_Error *resp;
+    resp = device_remote_1(&parms, client);
+    mXPUSHi(resp->error);
+
+
+
+void
+device_local(Lab::VXI11 client, Device_Link lid, Device_Flags flags, u_long lock_timeout, u_long io_timeout)
+PPCODE:
+    Device_GenericParms parms = {lid, flags, lock_timeout, io_timeout};
+    Device_Error *resp;
+    resp = device_local_1(&parms, client);
+    mXPUSHi(resp->error);
+
+
+
+void
+device_lock(Lab::VXI11 client, Device_Link lid, Device_Flags flags, u_long lock_timeout)
+PPCODE:
+    Device_LockParms parms = {lid, flags, lock_timeout};
+    Device_Error *resp;
+    resp = device_lock_1(&parms, client);
+    mXPUSHi(resp->error);
+
+
+
+void
+device_unlock(Lab::VXI11 client, Device_Link lid)
+PPCODE:
+    Device_Error *resp;
+    resp = device_unlock_1(&lid, client);
+    mXPUSHi(resp->error);  
+
+
+
+void
+device_enable_srq(Lab::VXI11 client, Device_Link lid, bool_t enable, SV *handle)
+PPCODE:
+    const char *bytes;
+    STRLEN len;
+    bytes = SvPV(handle, len);
+    Device_EnableSrqParms parms = {lid, enable, {len, (char *) bytes}};
+    Device_Error *resp;
+    resp = device_enable_srq_1(&parms, client);
+    mXPUSHi(resp->error);
+
+
+
+void
+device_docmd(Lab::VXI11 client, Device_Link lid, Device_Flags flags, u_long io_timeout, u_long lock_timeout, long cmd, bool_t network_order, long datasize, SV *data_in)
+PPCODE:
+    const char *bytes;
+    STRLEN len;
+    bytes = SvPV(data_in, len);
+    Device_DocmdParms parms = {lid, flags, io_timeout, lock_timeout, cmd, network_order, datasize, {len, (char *) bytes}};
+    Device_DocmdResp *resp;
+    resp = device_docmd_1(&parms, client);
+    mXPUSHi(resp->error);
+    mXPUSHp(resp->data_out.data_out_val, resp->data_out.data_out_len);
+
+
+
+void
+destroy_link(Lab::VXI11 client, Device_Link lid)
+PPCODE:
+    Device_Error *resp;
+    resp = destroy_link_1(&lid, client);
+    mXPUSHi(resp->error);
+
+
+void
+create_intr_chan(Lab::VXI11 client, u_long hostAddr, u_short hostPort, u_long progNum, u_long progVers, Device_AddrFamily progFamily)
+PPCODE:
+    Device_RemoteFunc parms = {hostAddr, hostPort, progNum, progVers, progFamily};
+    Device_Error *resp;
+    resp = create_intr_chan_1(&parms, client);
+    mXPUSHi(resp->error);
+
+
+void
+destroy_intr_chan(Lab::VXI11 client);
+PPCODE:
+    Device_Error *resp;
+    resp = destroy_intr_chan_1(NULL, client);
+    mXPUSHi(resp->error);
