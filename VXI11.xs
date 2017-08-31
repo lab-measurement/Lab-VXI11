@@ -44,7 +44,7 @@ CODE:
 
 
 void
-create_link(Lab::VXI11 client, long clientId, bool_t lockDevice, unsigned long lock_timeout, char *device)
+create_link(Lab::VXI11 client, long clientId, bool_t lockDevice, u_long lock_timeout, char *device)
 PPCODE:
     Create_LinkParms link_parms;
     link_parms.clientId = clientId;
@@ -101,4 +101,5 @@ PPCODE:
     
 
    
-
+#void
+#device_readstb(Lab::VXI11 client, long lid, long flags, 
