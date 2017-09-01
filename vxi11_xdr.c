@@ -3,7 +3,14 @@
  * It was generated using rpcgen.
  */
 
+/* 
+ * Added GCC pragma to ignore "-Wunused-variable".
+ */
+
 #include "vxi11.h"
+
+#pragma GCC diagnostic ignored "-Wunused-variable"
+
 
 bool_t
 xdr_Device_Link (XDR *xdrs, Device_Link *objp)
