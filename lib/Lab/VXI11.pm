@@ -9,43 +9,6 @@ use AutoLoader;
 
 our @ISA = qw(Exporter);
 
-# Items to export into callers namespace by default. Note: do not export
-# names by default without a very good reason. Use EXPORT_OK instead.
-# Do not simply export all your public functions/methods/constants.
-
-# This allows declaration	use Lab::VXI11 ':all';
-# If you do not need this, moving things directly into @EXPORT or @EXPORT_OK
-# will save memory.
-# our %EXPORT_TAGS = ( 'all' => [ qw(
-# 	DEVICE_ASYNC
-# 	DEVICE_ASYNC_VERSION
-# 	DEVICE_CORE
-# 	DEVICE_CORE_VERSION
-# 	DEVICE_INTR
-# 	DEVICE_INTR_VERSION
-# 	DEVICE_TCP
-# 	DEVICE_UDP
-# 	create_intr_chan
-# 	create_link
-# 	destroy_intr_chan
-# 	destroy_link
-# 	device_abort
-# 	device_clear
-# 	device_docmd
-# 	device_enable_srq
-# 	device_intr_srq
-# 	device_local
-# 	device_lock
-# 	device_read
-# 	device_readstb
-# 	device_remote
-# 	device_trigger
-# 	device_unlock
-# 	device_write
-# ) ] );
-
-# our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
-
 our @EXPORT = qw(
 	DEVICE_ASYNC
 	DEVICE_ASYNC_VERSION
@@ -55,23 +18,6 @@ our @EXPORT = qw(
 	DEVICE_INTR_VERSION
 	DEVICE_TCP
 	DEVICE_UDP
-	create_intr_chan
-	create_link
-	destroy_intr_chan
-	destroy_link
-	device_abort
-	device_clear
-	device_docmd
-	device_enable_srq
-	device_intr_srq
-	device_local
-	device_lock
-	device_read
-	device_readstb
-	device_remote
-	device_trigger
-	device_unlock
-	device_write
 );
 
 our $VERSION = '0.01';
@@ -108,73 +54,119 @@ XSLoader::load('Lab::VXI11', $VERSION);
 
 1;
 __END__
-# Below is stub documentation for your module. You'd better edit it!
-
 =head1 NAME
 
-Lab::VXI11 - Perl extension for blah blah blah
+Lab::VXI11 - Perl interface to VXI-11 Test&Measurement backend
 
 =head1 SYNOPSIS
 
   use Lab::VXI11;
-  blah blah blah
+
+  my $client = Lab::VXI11->new('132.199.1.2', DEVICE_CORE, DEVICE_CORE_VERSION, "tcp");
+
+  ($error, $lid, $abortPort, $maxRecvSize) = $client->create_link(0, 0, 0, "inst0");
+
+  # Send "*IDN\n" command and read answer.
+  ($error, $size) = $client->device_write($lid, 1000, 0, 0, "*IDN?\n");
+  ($error, $reason, $data) = $client->device_read($lid, 100, 1000, 0, 0, 0);
+  
+  ($error) = $client->destroy_link($lid);
 
 =head1 DESCRIPTION
 
-Stub documentation for Lab::VXI11, created by h2xs. It looks like the
-author of the extension was negligent enough to leave the stub
-unedited.
+Raw XS interface for VXI-11. Uses Sun's RPC library and C-code created by rpcgen.
 
-Blah blah blah.
+The VXI-11 API is documented in the L<VXI-11 specification|http://www.vxibus.org/specifications.html>. A good tutorial can be found in Agilent's application note I<Using Linux to Control LXI Instruments Through VXI-11>.
 
-=head2 EXPORT
+=head1 INSTALLATION
 
-None by default.
+On Linux, Sun's RPC library is part of the libc (glibc). Just use your CPAN client:
 
-=head2 Exportable constants
+ $ cpanm Lab::VXI11
 
-  DEVICE_ASYNC
-  DEVICE_ASYNC_VERSION
-  DEVICE_CORE
-  DEVICE_CORE_VERSION
-  DEVICE_INTR
-  DEVICE_INTR_VERSION
-  DEVICE_TCP
-  DEVICE_UDP
-  create_intr_chan
-  create_link
-  destroy_intr_chan
-  destroy_link
-  device_abort
-  device_clear
-  device_docmd
-  device_enable_srq
-  device_intr_srq
-  device_local
-  device_lock
-  device_read
-  device_readstb
-  device_remote
-  device_trigger
-  device_unlock
-  device_write
+On Windows this module is untested (VISA contains a VXI11 driver).
 
+=head1 METHODS
 
+See the VXI-11 specs for more details.
 
-=head1 SEE ALSO
+=head2 new
 
-Mention other useful documentation such as the documentation of
-related modules or operating system documentation (such as man pages
-in UNIX), or any relevant external documentation such as RFCs or
-standards.
+  $client = Lab::VXI11->new($host, $prog, $vers, $proto); 
 
-If you have a mailing list set up for your module, mention it here.
+=head2 create_link
 
-If you have a web site set up for your module, mention it here.
+  ($erro, $lid, $abortPort, $maxRecvSize) = $client->create_link($clientId, $lockDevice, $lock_timeout, $device);
+
+=head2 device_write
+
+ ($error, $size) = $client->device_write($lid, $io_timeout, $lock_timeout, $flags, $data);
+
+=head2 device_read
+
+ ($error, $reason, $data) = $client->device_read($lid, $requestSize, $io_timeout, $lock_timeout, $flags, $termChar);
+
+C<$termChar> needs to be a number, e.g. C<ord("\n")>.
+
+=head2 device_readstb
+
+ ($error, $stb) = $client->device_readstb($lid, $flags, $lock_timeout, $io_timeout);
+
+=head2 device_trigger
+
+ ($error) = $client->device_trigger($lid, $flags, $lock_timeout, $io_timeout);
+
+=head2 device_clear
+
+ ($error) = $client->device_clear($lid, $flags, $lock_timeout, $io_timeout);
+
+=head2 device_remote
+
+ ($error) = $client->device_remote($lid, $flags, $lock_timeout, $io_timeout);
+
+=head2 device_local
+
+ ($error) = $client->device_local($lid, $flags, $lock_timeout, $io_timeout);
+
+=head2 device_lock
+
+ ($error) = $client->device_remote($lid, $flags, $lock_timeout);
+
+=head2 device_unlock
+
+ ($error) = $client->device_unlock($lid);
+
+=head2 device_enable_srq
+
+ ($error) = $client->device_enable_srq($lid, $enable, $handle);
+
+=head2 device_docmd
+
+ ($error, $data_out) = $client->device_docmd($lid, $flags, $io_timeout, $lock_timeout, $cmd, $network_order, $datasize, $data_in);
+
+=head2 destroy_link
+
+ ($error) = $client->destroy_link($lid);
+
+=head2 create_intr_chan
+
+ ($error) = $client->create_intr_chan($hostAddr, $hostPort, $progNum, $progVers, $progFamily);
+
+=head2 destroy_intr_chan
+
+ ($error) = $client->destroy_intr_chan();
+
+=head1 REPORTING BUGS
+
+Please report bugs at L<https://github.com/amba/Lab-VXI11/issues>.
+
+=head1 CONTACT
+
+Feel free to contact us at the #labmeasurement channel on Freenode IRC.
 
 =head1 AUTHOR
 
-Simon Reinhardt, E<lt>simon@(none)E<gt>
+Simon Reinhardt, E<lt>simon.reinhardt@stud.uni-regensburg.deE<gt>
 
 =head1 COPYRIGHT AND LICENSE
 
