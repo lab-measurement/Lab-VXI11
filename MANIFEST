@@ -1,8 +1,17 @@
 Changes
+lib/Lab/VXI11.pm
+main
 Makefile.PL
-MANIFEST
+MANIFEST			This list of files
+MANIFEST.SKIP
 ppport.h
 README
-VXI11.xs
+scripts/agilent-test.pl
 t/Lab-VXI11.t
-lib/Lab/VXI11.pm
+t/pod.t
+typemap
+vxi11.h
+vxi11.x
+VXI11.xs
+vxi11_clnt.c
+vxi11_xdr.c
