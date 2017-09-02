@@ -8,7 +8,7 @@ use File::Slurper 'read_binary';
 use File::Find;
 use autodie qw/:all/;
 
-system(qw/perl Makefile.PL/);
+verbose_system(qw/perl Makefile.PL/);
 
 my $meta_json = decode_json(read_binary('MYMETA.json'));
 my $version = $meta_json->{version};
@@ -43,11 +43,11 @@ for my $module (find_modules()) {
 
 
 # Git tag & commit
-system('git', 'commit', '-am', "update version $version -> $new_version");
-system('git', 'tag', '-a', "v$new_version", '-m', "version $new_version");
+verbose_system('git', 'commit', '-am', "update version $version -> $new_version");
+verbose_system('git', 'tag', '-a', "v$new_version", '-m', "version $new_version");
 
 # Rerun Makefile.PL to get the new version
-system(qw/perl Makefile.PL/);
+verbose_system(qw/perl Makefile.PL/);
 
 
 
@@ -68,4 +68,9 @@ sub find_modules {
         );
     say "modules: @files";
     return @files;
+}
+
+sub verbose_system(@command) {
+    say "running command: @command";
+    system(@command);
 }
