@@ -46,6 +46,8 @@ new(char *class, char *host, unsigned long prog, unsigned long vers, char *proto
 CODE:
     do_not_warn_unused(class);
     RETVAL = clnt_create(host, prog, vers, proto);
+    if (RETVAL == NULL)
+        clnt_pcreateerror("Failed to create RPC client:");
 OUTPUT:
     RETVAL
 
