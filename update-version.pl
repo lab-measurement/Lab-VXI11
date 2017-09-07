@@ -47,7 +47,7 @@ verbose_system('git', 'commit', '-am', "update version $version -> $new_version"
 verbose_system('git', 'tag', '-a', "v$new_version", '-m', "version $new_version");
 
 verbose_system(qw/git push/);
-verbose_sysem(qw/git push --tags/);
+verbose_system(qw/git push --tags/);
 
 
 # Rerun Makefile.PL to get the new version
