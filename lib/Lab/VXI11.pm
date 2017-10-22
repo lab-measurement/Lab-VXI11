@@ -158,11 +158,19 @@ C<$termChar> needs to be a number, e.g. C<ord("\n")>.
 
 =head1 REPORTING BUGS
 
-Please report bugs at L<https://github.com/amba/Lab-VXI11/issues>.
+Please report bugs at L<https://github.com/lab-measurement/Lab-VXI11/issues>.
 
 =head1 CONTACT
 
 Feel free to contact us at the #labmeasurement channel on Freenode IRC.
+
+=head1 SEE ALSO
+
+=over
+
+=item * L<Blog post on Lab::VXI11 and USB::TMC|http://blogs.perl.org/users/simon_reinhardt/2017/10/labmeasurement-new-lightweight-backends-for-vxi-11-and-usb-tmc.html>
+
+=back
 
 =head1 AUTHOR
 
