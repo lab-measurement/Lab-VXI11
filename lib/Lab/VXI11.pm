@@ -84,7 +84,7 @@ With most Unix platforms, Sun's RPC library (sunrpc) is part of the libc and Lab
 does not have any dependencies.
 If your system uses GNU C library (glibc) (default libc on Linux), note that
 sunrpc is deprecated as of glibc 2.26. If sunrpc is not contained in the libc, you can
-install libtirpc as an replacement, e.g.
+install libtirpc as a replacement, e.g.
 
  $ apt-get install libtirpc-dev pkg-config
 
